@@ -1,0 +1,53 @@
+# ######################
+# base config
+# ######################
+log_dir: &log_dir /data/log/chaos
+disable_existing_loggers: false
+formatters:
+    basic:
+        datefmt: '%Y-%m-%d %H:%M:%S'
+        format: '%(asctime)-6s: %(name)s - %(levelname)s - %(message)s; %(thread)d - %(filename)s - %(funcName)s'
+    logstash:
+        datefmt: '%Y-%m-%d %H:%M:%S'
+        format: 'timestamp=%(asctime)-6s    level=%(levelname)s    %(message)s'
+    static:
+        datefmt: '%Y-%m-%d %H:%M:%S'
+        format: '%(message)s'
+handlers:
+    console:
+        class: logging.StreamHandler
+        formatter: basic
+        level: DEBUG
+    error_file:
+        class: logging.handlers.WatchedFileHandler
+        filename: !pathjoin [*log_dir, 'error.log']
+        formatter: basic
+        level: ERROR
+    main_file:
+        class: logging.handlers.WatchedFileHandler
+        filename: !pathjoin [*log_dir, 'main.log']
+        formatter: basic
+        level: INFO
+
+loggers:
+    zelus.main:
+        handlers: [console, main_file, error_file]
+        level: DEBUG
+        propagate: False
+
+root:
+    handlers: [console, main_file, error_file]
+    level: DEBUG
+version: 1
+# ######################
+# product config, will updated to the above configuration
+# ######################
+product:
+    root:
+        handlers: ['main_file', 'error_file']
+        level: 'INFO'
+    loggers:
+        zelus.main:
+            handlers: [main_file, error_file]
+            level: INFO
+            propagate: False

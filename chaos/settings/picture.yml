@@ -1,0 +1,4 @@
+ENGINE:
+    baidu:
+        url: https://image.baidu.com/search/flip
+        pn: 20
