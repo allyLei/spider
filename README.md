@@ -36,7 +36,7 @@
 
 * 实例
 打开浏览器，访问：
-http://10.60.81.246:8888/images?engine=baidu&word=%E7%BE%8E%E5%A5%B3+%E5%B8%85%E5%93%A5&limit=100
+http://10.60.81.249:8888/images?engine=baidu&word=%E7%BE%8E%E5%A5%B3+%E5%B8%85%E5%93%A5&limit=100
 
 ## Change Log
 pass
