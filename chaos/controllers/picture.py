@@ -19,6 +19,9 @@ class PictureCtrl:
         if request.get("engine", "") == "baidu":
             logging.getLogger().info("engine: baidu")
             images = await self.baidu_handler(request)
+        elif request.get("engine", "") == "google":
+            logging.getLogger().info("engine: google")
+            images = await self.google_handler(request)
         return images
 
     async def baidu_handler(self, request):
@@ -57,6 +60,55 @@ class PictureCtrl:
         logging.getLogger("[BAIDU] images count: %s" % len(images))
         return images
 
+    async def google_handler(self, request):
+        """获取Google图片
+        """
+        google_url = PICTURE_ENGINE["google"]["url"]
+        images = []
+        headers = {}
+        headers['User-Agent'] = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
+        google_params = {
+            "q": request.get("word", ""),
+            "espv": "2",
+            "biw": "1366",
+            "bih": "667",
+            "site": "webhp",
+            "source": "lnms",
+            "tbm": "isch",
+            "sa": "X",
+            "ei": "XosDVaCXD8TasATItgE&ved=0CAcQ_AUoAg",
+        }
+
+        if request.get("size", {}).get("width", 0) == 0:
+            if request.get("size", {}).get("height", 0) == 0:
+                pass
+            else:
+                google_params["tbs"] = 'isz:ex,iszw:' + request.get("size", {}).get("height", "") + ',iszh:' + request.get("size", {}).get("height", "")
+        else:
+            if request.get("size", {}).get("height", 0) == 0:
+                google_params["tbs"] = 'isz:ex,iszw:' + request.get("size", {}).get("width", "") + ',iszh:' + request.get("size", {}).get("width", "")
+            else:
+                google_params["tbs"] = 'isz:ex,iszw:' + request.get("size", {}).get("width", "") + ',iszh:' + request.get("size", {}).get("height", "")
+            
+        limit = request.get("limit", 0)
+        # 由于google图片不支持翻页，所以将翻页次数设为1
+        page_count = 1
+        async with aiohttp.ClientSession() as session:
+            for i in range(page_count):
+                logging.getLogger().info("[GOOGLE] request params: %s" % google_params)
+                async with session.get(google_url, headers=headers, params=google_params) as resp:
+                    resp_str = await resp.text()
+                    urls = self.regex_imageurl_google(resp_str)
+                    images += urls
+                if len(images) >= limit:
+                    break
+        if limit != 0:
+            images = images[:limit]
+        else:
+            pass
+        logging.getLogger("[GOOGLE] images count: %s" % len(images))
+        return images
+
     def regex_imageurl_baidu(self, text):
         """正则方法找到百度图片URL
         """
@@ -71,4 +123,12 @@ class PictureCtrl:
                 _, url = item
                 url = url.strip().strip('"')
                 urls.add(url)
+        return urls
+
+    def regex_imageurl_google(self, text):
+        """正则方法找到Google图片URL
+        """
+        pattern = re.compile(r'"ou":"([^"]+)"')
+        result = pattern.findall(text)
+        urls = set(result)
         return urls
