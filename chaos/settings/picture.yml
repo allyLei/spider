@@ -2,3 +2,6 @@ ENGINE:
     baidu:
         url: https://image.baidu.com/search/flip
         pn: 20
+    google:
+        url: https://www.google.com/search
+        pn: 100
